@@ -149,7 +149,7 @@ export default {
         },
 
         async save (){
-            if(!this.validateField(this.aluno) || this.validateEmail())
+            if(!this.validateField(this.aluno) || this.validateEmail() || this.validateCpf(this.aluno))
                 return false;
             await this.makeRequest('./aluno/inserir', 'post', this.aluno);
             await this.getAlunos(this.page, true);
@@ -194,7 +194,7 @@ export default {
                 invalid.push(field);
                 isValid = false;
             };
-    
+
             if (data.nome.length > 0){
                 let upperName = data.nome.toLowerCase().replace(/(?:^|\s)\S/g, function(a){
                    return a.toUpperCase();
@@ -230,20 +230,48 @@ export default {
             ) {
                 return this.$alert(`2- O CPF: (${data.cpf}) não é válido tente novamente!`, 'Error', 'warning');
             }
-            var sum = 0;
-            var rest;
-            for (var i = 1; i <= 9; i++)
-                sum = sum + parseInt(cpf.substring(i-1, i) * (11 - 1))
-            rest = (sum * 10) % 11;
-            if ((rest == 10) || (rest == 11)) rest = 0
-            if (rest != parseInt(cpf.substring(9, 10)) ) return this.$alert(`3- O CPF: (${data.cpf}) não é válido tente novamente!`, 'Error', 'warning');
-            sum = 0
-            for (var c = 1; c <= 10; c++)
-                sum = sum + parseInt(cpf.substring(10, 11))
-            rest = (sum * 10) % 11;
-            if ((rest == 10) || (rest == 11)) rest = 0
-            if (rest != parseInt(cpf.substring(10, 11))) return this.$alert(`4-  O CPF: (${data.cpf}) não é válido tente novamente!`, 'Error', 'warning');
-            return true;
+
+            let arrCpf = cpf.split('');
+            let indexArray = 0;
+
+            while(arrCpf[indexArray] === arrCpf[indexArray + 1] && indexArray <=10){
+                indexArray++;
+            }
+
+            if(indexArray === 10){
+                return false;
+            }
+            
+            let multiplicador = 10;
+            let resultado = 0;
+            let multiplicador2Digito = 11;
+            let resultado2Digito = 0;
+
+            
+            arrCpf.forEach((item, index) =>{
+                if (index < 9){
+                    resultado += parseInt(item) * multiplicador;
+                    multiplicador--;
+                    
+                }
+                if (index < 10){
+                    resultado2Digito += parseInt(item) * multiplicador2Digito;
+                    multiplicador2Digito--;
+                }
+            });
+
+            let validaDigitoverificador = (resultado * 10) % 11;
+            let validaSegundoDigitoVerificador = (resultado2Digito * 10) % 11;
+
+            validaDigitoverificador = validaDigitoverificador === 10 ? 0 :validaDigitoverificador;
+            validaSegundoDigitoVerificador = validaSegundoDigitoVerificador === 10 ? 0 : validaSegundoDigitoVerificador;
+            console.log(validaDigitoverificador);
+            console.log(validaSegundoDigitoVerificador);
+
+            if (validaDigitoverificador != parseInt(arrCpf[9]) || validaSegundoDigitoVerificador != parseInt(arrCpf[10])){
+                return this.$alert(`3- O CPF: (${data.cpf}) não é válido tente novamente!`, 'Error', 'warning');
+            }
+        
         },
 
     }
