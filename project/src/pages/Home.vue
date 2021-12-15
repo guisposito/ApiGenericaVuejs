@@ -194,7 +194,6 @@ export default {
                 invalid.push(field);
                 isValid = false;
             };
-
             if (data.nome.length > 0){
                 let upperName = data.nome.toLowerCase().replace(/(?:^|\s)\S/g, function(a){
                    return a.toUpperCase();
@@ -225,6 +224,11 @@ export default {
         },
         validateCpf(data){
             if(typeof data.cpf !== "string") return this.$alert(`1- O CPF: (${data.cpf}) não é válido tente novamente!`, 'Error', 'warning');
+            for(var i=0; i < this.studentList.length; i++){
+                if(this.studentList[i].cpf === data.cpf){
+                    return this.$alert('CPF já cadastrado', 'Error', 'warning');
+                } 
+            }
             let cpf = data.cpf.replace(/[\s.-]*/igm, '');
             if( cpf.length !== 11 || !Array.from(cpf).filter(e => e !== cpf[0]).length
             ) {
@@ -242,31 +246,29 @@ export default {
                 return false;
             }
             
-            let multiplicador = 10;
-            let resultado = 0;
-            let multiplicador2Digito = 11;
-            let resultado2Digito = 0;
+            let mult1 = 10;
+            let result1 = 0;
+            let mult2 = 11;
+            let result2 = 0;
 
             
             arrCpf.forEach((item, index) =>{
                 if (index < 9){
-                    resultado += parseInt(item) * multiplicador;
-                    multiplicador--;
+                    result1 += parseInt(item) * mult1;
+                    mult1--;
                     
                 }
                 if (index < 10){
-                    resultado2Digito += parseInt(item) * multiplicador2Digito;
-                    multiplicador2Digito--;
+                    result2 += parseInt(item) * mult2;
+                    mult2--;
                 }
             });
 
-            let validaDigitoverificador = (resultado * 10) % 11;
-            let validaSegundoDigitoVerificador = (resultado2Digito * 10) % 11;
+            let validaDigitoverificador = (result1 * 10) % 11;
+            let validaSegundoDigitoVerificador = (result2 * 10) % 11;
 
             validaDigitoverificador = validaDigitoverificador === 10 ? 0 :validaDigitoverificador;
             validaSegundoDigitoVerificador = validaSegundoDigitoVerificador === 10 ? 0 : validaSegundoDigitoVerificador;
-            console.log(validaDigitoverificador);
-            console.log(validaSegundoDigitoVerificador);
 
             if (validaDigitoverificador != parseInt(arrCpf[9]) || validaSegundoDigitoVerificador != parseInt(arrCpf[10])){
                 return this.$alert(`3- O CPF: (${data.cpf}) não é válido tente novamente!`, 'Error', 'warning');
